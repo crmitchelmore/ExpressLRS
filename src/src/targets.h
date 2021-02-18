@@ -112,7 +112,7 @@ https://github.com/jaxxzer
 
 #ifdef USE_R9MM_R9MINI_SBUS
     #define GPIO_PIN_RCSIGNAL_RX    PA3
-    #define GPIO_PIN_RCSIGNAL_TX    PA2
+    #define GPIO_PIN_RCSIGNAL_TX    PA2 
 #elif TARGET_R9SLIMPLUS_RX               // R9SLIMPLUS USES DUAL UART CONFIGURATION FOR TX1/RX1
     #define GPIO_PIN_RCSIGNAL_RX    PB11 // RX1 PIN OF CONNECTOR 1 ON SLIMPLUS
     #define GPIO_PIN_RCSIGNAL_TX    PA9  // TX1 PIN OF CONNECTOR 1 ON SLIMPLUS
@@ -366,3 +366,23 @@ https://github.com/jaxxzer
 #define GPIO_PIN_LED GPIO_PIN_LED_RED
 #endif /* GPIO_PIN_LED_RED */
 #endif /* GPIO_PIN_LED */
+
+#ifdef TARGET_BETAFPV_900MHz_RX
+#define GPIO_PIN_NSS            PA4
+#define GPIO_PIN_BUSY           -1
+#define GPIO_PIN_DIO0           PB6
+#define GPIO_PIN_DIO1           PA1  // todo
+#define GPIO_PIN_MOSI           PA7
+#define GPIO_PIN_MISO           PA6
+#define GPIO_PIN_SCK            PA5
+#define GPIO_PIN_RST            PA15
+#define GPIO_PIN_RCSIGNAL_RX    PA10
+#define GPIO_PIN_RCSIGNAL_TX    PA9
+#define GPIO_PIN_BUTTON         PB7  // pullup e.g. LOW when pressed
+#define GPIO_PIN_TEST           PA2
+#define timerOffset             1
+#define GPIO_PIN_LED_WS2812      PA3
+#define GPIO_PIN_LED_WS2812_FAST PA_3
+#define GPIO_PIN_RX_ENABLE      PA0
+#define GPIO_PIN_TX_ENABLE      PA1
+#endif
