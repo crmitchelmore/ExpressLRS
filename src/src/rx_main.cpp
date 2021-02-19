@@ -32,7 +32,7 @@ SX1280Driver Radio;
 #include "STM32_UARTinHandler.h"
 #endif
 
-#ifdef TARGET_RX_GHOST_ATTO_V1
+#if defined(TARGET_RX_GHOST_ATTO_V1) || defined(TARGET_BETAFPV_900MHz_RX)
 uint8_t LEDfadeDiv;
 uint8_t LEDfade;
 bool LEDfadeDir;
