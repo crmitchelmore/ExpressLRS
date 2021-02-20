@@ -386,3 +386,28 @@ https://github.com/jaxxzer
 #define GPIO_PIN_RX_ENABLE      PA0
 #define GPIO_PIN_TX_ENABLE      PA1
 #endif
+
+#ifdef TARGET_BETAFPV_900MHz_TX
+#define GPIO_PIN_RFamp_APC1           PA15  //APC2 is connected through a I2C dac and is handled elsewhere
+#define GPIO_PIN_RFswitch_CONTROL     PB3  //HIGH = RX, LOW = TX
+
+#define GPIO_PIN_NSS            PA4
+#define GPIO_PIN_BUSY           -1 // NOT USED ON THIS TARGET
+#define GPIO_PIN_DIO0           PB5
+#define GPIO_PIN_MOSI           PA7
+#define GPIO_PIN_MISO           PA6
+#define GPIO_PIN_SCK            PA5
+#define GPIO_PIN_RST            PB4
+#define GPIO_PIN_RX_ENABLE      GPIO_PIN_RFswitch_CONTROL
+#define GPIO_PIN_TX_ENABLE      GPIO_PIN_RFamp_APC1
+#define GPIO_PIN_RCSIGNAL_RX    PA3
+#define GPIO_PIN_RCSIGNAL_TX    PA2
+#define GPIO_PIN_LED_GREEN      PC15 // Green LED
+#define GPIO_PIN_LED_RED        UNDEF_PIN
+#define GPIO_PIN_BUTTON         PB2
+//#define GPIO_PIN_LED_WS2812      PB10
+//#define GPIO_PIN_LED_WS2812_FAST PB_10
+
+#define BUFFER_OE               PB12
+#define GPIO_PIN_DIO1           PB11  //Not Needed, HEARTBEAT pin
+#endif

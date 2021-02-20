@@ -586,7 +586,17 @@ void setup()
   button.init(GPIO_PIN_BUTTON, true); // r9 tx appears to be active high
   R9DAC.init();
 #endif
+#endif
 
+#ifdef TARGET_BETAFPV_900MHz_TX
+
+    pinMode(GPIO_PIN_LED_GREEN, OUTPUT);
+    digitalWrite(GPIO_PIN_LED_GREEN, LOW);
+
+    HardwareSerial(USART3);
+    Serial.setTx(PB10);
+    Serial.setRx(PB11);
+    Serial.begin(400000);
 #endif
 
 #ifdef PLATFORM_ESP32
@@ -690,6 +700,8 @@ void loop()
     connectionState = disconnected;
     #if defined(TARGET_R9M_TX) || defined(TARGET_R9M_LITE_TX) || defined(TARGET_R9M_LITE_PRO_TX) || defined(TARGET_RX_GHOST_ATTO_V1)
     digitalWrite(GPIO_PIN_LED_RED, LOW);
+    #elif defined(TARGET_BETAFPV_900MHz_TX) 
+    digitalWrite(GPIO_PIN_LED_GREEN, HIGH);
     #endif
   }
   else
@@ -697,10 +709,12 @@ void loop()
     connectionState = connected;
     #if defined(TARGET_R9M_TX) || defined(TARGET_R9M_LITE_TX) || defined(TARGET_R9M_LITE_PRO_TX) || defined(TARGET_RX_GHOST_ATTO_V1)
     digitalWrite(GPIO_PIN_LED_RED, HIGH);
+    #elif defined(TARGET_BETAFPV_900MHz_TX) 
+    digitalWrite(GPIO_PIN_LED_GREEN, LOW);
     #endif
   }
 
-#if defined(TARGET_R9M_TX) || defined(TARGET_R9M_LITE_TX) || defined(TARGET_R9M_LITE_PRO_TX) || defined(TARGET_RX_GHOST_ATTO_V1)
+#if defined(TARGET_R9M_TX) || defined(TARGET_R9M_LITE_TX) || defined(TARGET_R9M_LITE_PRO_TX) || defined(TARGET_RX_GHOST_ATTO_V1)|| defined(TARGET_BETAFPV_900MHz_TX)  
   crsf.STM32handleUARTin();
   #ifdef FEATURE_OPENTX_SYNC
   crsf.sendSyncPacketToTX();

@@ -377,7 +377,7 @@ public:
     static void ICACHE_RAM_ATTR duplex_set_TX();
 #endif
 
-#if defined(TARGET_R9M_TX) || defined(TARGET_R9M_LITE_TX) || defined(TARGET_R9M_LITE_PRO_TX)
+#if defined(TARGET_R9M_TX) || defined(TARGET_R9M_LITE_TX) || defined(TARGET_R9M_LITE_PRO_TX) || defined(TARGET_BETAFPV_900MHz_TX)
     static void ICACHE_RAM_ATTR STM32initUART();
     static void ICACHE_RAM_ATTR UARTwdt();
     static void ICACHE_RAM_ATTR STM32handleUARTin();
