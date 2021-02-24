@@ -845,15 +845,22 @@ void ICACHE_RAM_ATTR CRSF::sendSyncPacketToTX(void *pvParameters) // in values i
                 {
                     if (SerialOutFIFO.size() >= (peekVal + 1))
                     {
+                    #ifdef TARGET_BETAFPV_900MHz_TX
+                        digitalWrite(BUFFER_OE, LOW);
+                    #else
                         digitalWrite(BUFFER_OE, HIGH);
-
+                    #endif
                         uint8_t OutPktLen = SerialOutFIFO.pop();
                         uint8_t OutData[OutPktLen];
 
                         SerialOutFIFO.popBytes(OutData, OutPktLen);
                         CRSF::Port.write(OutData, OutPktLen); // write the packet out
                         CRSF::Port.flush();
+                    #ifdef TARGET_BETAFPV_900MHz_TX
+                        digitalWrite(BUFFER_OE, HIGH);
+                    #else
                         digitalWrite(BUFFER_OE, LOW);
+                    #endif
                         while (CRSF::Port.available())
                         {
                             CRSF::Port.read(); // measure sure there is no garbage on the UART at the start
