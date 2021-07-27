@@ -22,7 +22,7 @@ static NeoPixelBus<NeoRgbFeature, Neo800KbpsMethod> strip(PixelCount, GPIO_PIN_L
 #include "STM32F3_WS2812B_LED.h"
 #endif
 
-static uint32_t colors[8] = {
+static uint32_t colors[9] = {
     0xFFFFFF,     // white
     0xFF00FF,     // magenta
     0x8000FF,     // violet
@@ -30,7 +30,8 @@ static uint32_t colors[8] = {
     0x00FF00,     // green
     0xFFFFFF,     // yellow
     0xFF8000,     // orange
-    0xFF0000      // red
+    0xFF0000,     // red
+    0x00FFFF      //cyan
 };
 
 static uint32_t rate_colors[RATE_MAX] = {
@@ -56,6 +57,13 @@ void WS281BsetLED(uint8_t const r, uint8_t const g, uint8_t const b) // takes RG
 {
     strip.ClearTo(RgbColor(r, g, b));
     strip.Show();
+}
+#endif
+
+#if defined(USE_SINGLE_RGB_LED)
+void updateRGBColor(uint8_t color)
+{
+    WS281BsetLED(colors[color]);
 }
 #endif
 

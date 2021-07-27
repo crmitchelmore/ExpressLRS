@@ -71,6 +71,10 @@ OLED OLED;
 char commitStr[7] = "commit";
 #endif
 
+#if defined(USE_SINGLE_RGB_LED)
+uint8_t color = 8;
+#endif
+
 volatile uint8_t NonceTX;
 
 bool webUpdateMode = false;
@@ -761,7 +765,11 @@ void loop()
   uint32_t now = millis();
   static bool mspTransferActive = false;
 
+#if defined(USE_SINGLE_RGB_LED)
+  updateRGBColor(color);
+#else
   updateLEDs(now, connectionState, ExpressLRS_currAirRate_Modparams->index, config.GetPower());
+#endif
 
   #if defined(PLATFORM_ESP32)
     if (webUpdateMode)
