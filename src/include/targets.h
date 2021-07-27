@@ -547,6 +547,25 @@ Designed by NamimnoRC
 #define GPIO_PIN_LED_GREEN      16
 #define GPIO_PIN_BUTTON         25
 
+#elif defined(TARGET_TX_BETAFPV_2400_MICRO)
+#define GPIO_PIN_NSS            5
+#define GPIO_PIN_BUSY           21
+#define GPIO_PIN_DIO0           -1
+#define GPIO_PIN_DIO1           4
+#define GPIO_PIN_MOSI           23
+#define GPIO_PIN_MISO           19
+#define GPIO_PIN_SCK            18
+#define GPIO_PIN_RST            14
+#define GPIO_PIN_RX_ENABLE      27
+#define GPIO_PIN_TX_ENABLE      26
+#define GPIO_PIN_RCSIGNAL_RX    13
+#define GPIO_PIN_RCSIGNAL_TX    13
+#define GPIO_PIN_LED_BLUE       -1
+#define GPIO_PIN_LED_GREEN      16
+#define GPIO_PIN_BUTTON         25
+#define GPIO_PIN_OLED_SCL 32
+#define GPIO_PIN_OLED_SDA 22
+
 #elif defined(TARGET_RX_BETAFPV_2400_V1)
 #define GPIO_PIN_NSS            15
 #define GPIO_PIN_BUSY           5

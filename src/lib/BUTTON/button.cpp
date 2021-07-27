@@ -1,8 +1,11 @@
 #include "button.h"
 
+extern void longPressCB(void);
+extern void shortPressCB(void);
+
 void inline button::nullCallback(void) {}
-void (*button::buttonShortPress)() = &nullCallback; // callbacks
-void (*button::buttonLongPress)() = &nullCallback;  // callbacks
+void (*button::buttonShortPress)() = &longPressCB; // callbacks
+void (*button::buttonLongPress)() = &shortPressCB;  // callbacks
 void (*button::buttonTriplePress)() = &nullCallback;  // callbacks
 
 uint32_t button::buttonLastPressed = 0;
@@ -40,7 +43,28 @@ void button::init(int Pin, bool ActiveHigh)
 
 void button::handle()
 {
-    sampleButton();
+    uint8_t currState = digitalRead(buttonPin);
+    static uint32_t lastHandleTime = 0;
+
+    if(currState !=0)
+    {
+        return;
+    }
+
+    delay(20);
+    lastHandleTime = millis();;
+    while(digitalRead(buttonPin) == 0);
+
+    uint32_t period = millis() - lastHandleTime;
+
+    if(period > 500)
+    {       
+        longPressCB();
+    }
+    else
+    {
+        shortPressCB();
+    }
 }
 
 void button::sampleButton()

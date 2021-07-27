@@ -23,17 +23,21 @@
 #include <U8g2lib.h>    // Needed for the OLED drivers, this is a arduino package. It is maintained by platformIO
 #include "XBMStrings.h" // Contains all the express logos and animation for UI
 
+
 #if defined HAS_OLED_128_32
 // https://github.com/olikraus/u8g2/wiki/u8g2setupcpp
 // https://www.winstar.com.tw/products/oled-module/graphic-oled-display/wearable-displays.html
 // Used on the Ghost TX Lite
 U8G2_SSD1306_128X32_UNIVISION_F_4W_SW_SPI u8g2(U8G2_R0, GPIO_PIN_OLED_SCK, GPIO_PIN_OLED_MOSI, GPIO_PIN_OLED_CS, GPIO_PIN_OLED_DC, GPIO_PIN_OLED_RST);
+#elif defined HAS_I2C_OLED
+// https://github.com/olikraus/u8g2/wiki/u8g2setupcpp
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R2, GPIO_PIN_OLED_SCL, GPIO_PIN_OLED_SDA);
 #else
 #ifdef HAS_OLED_I2C
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, GPIO_PIN_OLED_RST, GPIO_PIN_OLED_SCK, GPIO_PIN_OLED_SDA);
 #else 
 // https://github.com/olikraus/u8g2/wiki/u8g2setupcpp
-U8G2_SH1106_128X64_NONAME_F_4W_SW_SPI u8g2(U8G2_R0, GPIO_PIN_OLED_SCK, GPIO_PIN_OLED_MOSI, GPIO_PIN_OLED_CS, GPIO_PIN_OLED_DC, GPIO_PIN_OLED_RST);
+U8G2_SSD1306_128X64_NONAME_F_4W_SW_SPI u8g2(U8G2_R0, GPIO_PIN_OLED_SCK, GPIO_PIN_OLED_MOSI, GPIO_PIN_OLED_CS, GPIO_PIN_OLED_DC, GPIO_PIN_OLED_RST);
 #endif
 #endif
 
@@ -78,25 +82,91 @@ void ghostChase(){
     #endif
 }
 
+
+#define PACKED __attribute__((packed))
+#define LOCKTIME 5000
+
+enum{
+    PKTRATE=0,
+    TLMRADIO,
+    POWERLEVEL,
+    RGBCOLOR,
+    BINDING,
+    WIFIUPDATE
+};
+
+
+uint32_t lastProcessTime=0;
+uint8_t currentIndex = 0;
+uint8_t showBaseIndex = 0;
+uint8_t screenLocked = 0;
+
+typedef void (*shortPressCallback)(uint8_t i);
+typedef void (*longPressCallback)(uint8_t i);
+typedef const char *(*getShowStr)(int i);
+
+static const char * getPowerString(int power);
+static const char * getRateString(int rate);
+static const char * getTLMRatioString(int ratio);
+static const char * getRgbString(int rgb);
+static const char * getBindString(int bind);
+static const char * getUpdateiString(int update);
+
+static void pktRateLPCB(uint8_t i);
+static void tlmLPCB(uint8_t i);
+static void powerLPCB(uint8_t i);
+static void rgbLPCB(uint8_t i);
+static void bindLPCB(uint8_t i);
+static void updateLPCB(uint8_t i);
+typedef struct 
+{
+    uint8_t line;
+    uint8_t value;
+    uint8_t index;
+    longPressCallback  lpcb;
+    getShowStr getStr;
+} PACKED screenShow_t;
+
+screenShow_t currentItem[] ={
+    {80,0,PKTRATE,pktRateLPCB,getRateString},
+
+    {80,1,TLMRADIO,tlmLPCB,getTLMRatioString},
+
+    {80,2,POWERLEVEL,powerLPCB,getPowerString},
+
+    {80,3,RGBCOLOR,rgbLPCB,getRgbString},
+
+    {80,4,BINDING,bindLPCB,getBindString},
+
+    {80,5,WIFIUPDATE,updateLPCB,getUpdateiString},
+};
+
+typedef struct {
+    const char *str;
+} PACKED showString_t;
+
+showString_t showString[] ={
+    "PktRate ",
+    "TLM ",
+    "Power ",
+    "Rgb ",
+    "Bind ",
+    "Update ",
+};
+
+
 /**
  * Displays the ExpressLRS logo
  *
  * @param values none
  * @return void
  */
-void OLED::displayLogo(){
+void OLED::init(int power, int rate, int ratio)
+{
     u8g2.begin();
-    u8g2.clearBuffer();
-    #if defined TARGET_TX_GHOST
-        ghostChase();
-    #else
-        #if defined HAS_OLED_128_32
-            u8g2.drawXBM(48, 0, 32, 32, elrs32);
-        #else
-            u8g2.drawXBM(16, 16, 64, 64, elrs64);
-        #endif
-    #endif
-    u8g2.sendBuffer();
+    currentItem[POWERLEVEL].value = power;
+    currentItem[PKTRATE].value = rate;
+    currentItem[TLMRADIO].value = ratio;
 }
 
 /**
@@ -107,32 +177,168 @@ void OLED::displayLogo(){
  *               ratio = telemetry rate char array (1:128) 
  * @return void
  */
-void OLED::updateScreen(const char * power, const char * rate, const char * ratio, const char * commitStr){
+void OLED::updateScreen(void)
+{
+    uint32_t now = millis();
     u8g2.clearBuffer();
 
-    #if defined HAS_OLED_128_32
+    if(now - lastProcessTime > LOCKTIME) // LOCKTIME seconds later lock the screen
+    {
+        screenLocked = 1;
+        u8g2.drawXBM(16, 16, 64, 64, elrs64);  
+    }
+    else
+    {
         u8g2.setFont(u8g2_font_courR10_tr);
-        u8g2.drawStr(0,15, rate);
-        u8g2.setFont(u8g2_font_courR10_tr);
-        u8g2.drawStr(70,15 , ratio);
-        u8g2.drawStr(0,32, power);
-        u8g2.setFont(u8g2_font_courR10_tr);
-        u8g2.drawStr(70,32, commitStr);
-    #else
-        u8g2.setFont(u8g2_font_courR10_tr);
-        u8g2.drawStr(0,10, "ExpressLRS");
-        u8g2.setFont(u8g2_font_courR08_tr);
-        u8g2.drawStr(0,24, "Hash: ");
-        u8g2.drawStr(38,24, commitStr);
-        u8g2.setFont(u8g2_font_courR10_tr);
-        u8g2.drawStr(0,42, rate);
-        u8g2.setFont(u8g2_font_courR10_tr);
-        u8g2.drawStr(70,42 , ratio);
-        u8g2.drawStr(0,57, power);
-        u8g2.setFont(u8g2_font_courR08_tr);
-        u8g2.drawStr(70,53, "TELEM");
-    #endif
+        for(int i=showBaseIndex;i<(4+showBaseIndex);i++)
+        {
+            u8g2.drawStr(0, (i-showBaseIndex)*15+12, showString[i].str); //the row line num: 12 , 27 , 42 ,57
+            if(currentIndex == currentItem[i].index)
+            {
+                u8g2.drawStr(currentItem[i].line-10,(i-showBaseIndex)*15+12, ">");
+            }
+            
+            u8g2.drawStr(currentItem[i].line,(i-showBaseIndex)*15+12, currentItem[i].getStr(currentItem[i].value));
+        }
+    }
     u8g2.sendBuffer();
+}
+
+void shortPressCB(void)
+{
+    if(!screenLocked)
+    {
+        lastProcessTime = millis();
+        currentIndex ++;
+
+        if(currentIndex > (sizeof(currentItem)/sizeof(screenShow_t) -1)) //detect last index,then comeback to first
+        {
+            currentIndex = 0;
+            showBaseIndex =0;
+        }
+        if(currentIndex > 3) //each screen only shows 4 line menu
+        {
+            showBaseIndex ++;
+        }
+    }
+}
+
+void longPressCB(void)
+{
+    lastProcessTime = millis();
+    if(screenLocked)  //unlock screen
+    {
+        screenLocked = 0;       
+    }
+    else
+    {  
+        currentItem[currentIndex].lpcb(currentIndex);
+    }  
+}
+
+void pktRateLPCB(uint8_t i)
+{
+    currentItem[i].value++;
+
+    if(currentItem[i].value>7)
+    {
+        currentItem[i].value = 0;
+    }
+
+    /*
+    TO DO: 需要添加对应的处理部分
+    */
+
+}
+
+void tlmLPCB(uint8_t i)
+{
+    currentItem[i].value++;
+
+    if(currentItem[i].value>7)
+    {
+        currentItem[i].value = 0;
+    }
+
+    /*
+    TO DO: 需要添加对应的处理部分
+    */
+
+}
+
+void powerLPCB(uint8_t i)
+{
+    currentItem[i].value++;
+
+    if(currentItem[i].value>7)
+    {
+        currentItem[i].value = 0;
+    }
+
+    /*
+    TO DO: 需要添加对应的处理部分
+    */
+
+}
+
+void rgbLPCB(uint8_t i)
+{
+    currentItem[i].value++;
+
+    if(currentItem[i].value>7)
+    {
+        currentItem[i].value = 0;
+    }
+
+    /*
+    TO DO: 需要添加对应的处理部分
+    */
+
+}
+
+void bindLPCB(uint8_t i)
+{   
+    /*
+    TO DO: 需要添加对应的处理部分
+    */
+
+}
+
+void updateLPCB(uint8_t i)
+{
+    /*
+    TO DO: 需要添加对应的处理部分
+    */
+
+}
+
+
+const char * getBindString(int bind)
+{
+    return "bind";
+}
+
+
+const char * getUpdateiString(int update)
+{
+    return "update";
+}
+
+
+const char * getRgbString(int rgb)
+{
+    switch (rgb)
+    {
+    case 0: return "off";
+    case 1: return "cyan";
+    case 3: return "blue";
+    case 4: return "green";
+    case 5: return "white";
+    case 6: return "violet";
+    case 7: return "yellow";
+    case 2: return "magenta";
+    default: return "Error";
+    }
 }
 
 /**
@@ -141,17 +347,17 @@ void OLED::updateScreen(const char * power, const char * rate, const char * rati
  * @param values power = int/enum for current power level.  
  * @return const char array for power level Ex: "500 mW\0"
  */
-const char * OLED::getPowerString(int power){
+const char *getPowerString(int power){
     switch (power)
     {
-    case 0: return "10 mW";
-    case 1: return "25 mW";
-    case 3: return "100 mW";
-    case 4: return "250 mW";
-    case 5: return "500 mmW";
-    case 6: return "1000 mW";
-    case 7: return "2000 mW";
-    case 2: return "50 mW";
+    case 0: return "10mW";
+    case 1: return "25mW";
+    case 3: return "100mW";
+    case 4: return "250mW";
+    case 5: return "500mW";
+    case 6: return "1000mW";
+    case 7: return "2000mW";
+    case 2: return "50mW";
     default: return "Error";
     }
 }
@@ -162,17 +368,17 @@ const char * OLED::getPowerString(int power){
  * @param values rate = int/enum for current packet rate.  
  * @return const char array for packet rate Ex: "500 hz\0"
  */
-const char * OLED::getRateString(int rate){
+const char *getRateString(int rate){
     switch (rate)
     {
-    case 0: return "500 Hz";
-    case 1: return "250 Hz";
-    case 2: return "200 Hz";
-    case 3: return "150 Hz";
-    case 4: return "100 Hz";
-    case 5: return "50 Hz";
-    case 6: return "25 Hz";
-    case 7: return "4 Hz";
+    case 0: return "500hz";
+    case 1: return "250hz";
+    case 2: return "200hz";
+    case 3: return "150hz";
+    case 4: return "100hz";
+    case 5: return "50hz";
+    case 6: return "25hz";
+    case 7: return "4hz";
     default: return "ERROR";
     }
 }
@@ -183,7 +389,7 @@ const char * OLED::getRateString(int rate){
  * @param values ratio = int/enum for current power level.  
  * @return const char array for telemetry ratio Ex: "1:128\0"
  */
-const char * OLED::getTLMRatioString(int ratio){
+const char *getTLMRatioString(int ratio){
     switch (ratio)
     {
     case 0: return "OFF";
