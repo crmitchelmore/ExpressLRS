@@ -23,6 +23,9 @@
 #include <U8g2lib.h>    // Needed for the OLED drivers, this is a arduino package. It is maintained by platformIO
 #include "XBMStrings.h" // Contains all the express logos and animation for UI
 
+#if defined(USE_SINGLE_RGB_LED)
+extern void setRGBColor(uint8_t color);
+#endif
 
 #if defined HAS_OLED_128_32
 // https://github.com/olikraus/u8g2/wiki/u8g2setupcpp
@@ -285,7 +288,7 @@ void rgbLPCB(uint8_t i)
 {
     currentItem[i].value++;
 
-    if(currentItem[i].value>7)
+    if(currentItem[i].value>8)
     {
         currentItem[i].value = 0;
     }
@@ -293,7 +296,7 @@ void rgbLPCB(uint8_t i)
     /*
     TO DO: 需要添加对应的处理部分
     */
-
+   setRGBColor(currentItem[i].value);
 }
 
 void bindLPCB(uint8_t i)

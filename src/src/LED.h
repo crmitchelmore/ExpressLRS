@@ -61,9 +61,16 @@ void WS281BsetLED(uint8_t const r, uint8_t const g, uint8_t const b) // takes RG
 #endif
 
 #if defined(USE_SINGLE_RGB_LED)
-void updateRGBColor(uint8_t color)
+uint8_t currentColor = 8;
+
+void updateRGBColor(void)
 {
-    WS281BsetLED(colors[color]);
+    WS281BsetLED(colors[currentColor]);
+}
+
+void setRGBColor(uint8_t color)
+{
+    currentColor = color;
 }
 #endif
 

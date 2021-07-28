@@ -71,9 +71,6 @@ OLED OLED;
 char commitStr[7] = "commit";
 #endif
 
-#if defined(USE_SINGLE_RGB_LED)
-uint8_t color = 8;
-#endif
 
 volatile uint8_t NonceTX;
 
@@ -766,7 +763,7 @@ void loop()
   static bool mspTransferActive = false;
 
 #if defined(USE_SINGLE_RGB_LED)
-  updateRGBColor(color);
+  updateRGBColor();
 #else
   updateLEDs(now, connectionState, ExpressLRS_currAirRate_Modparams->index, config.GetPower());
 #endif
