@@ -45,7 +45,10 @@ SX1280Driver Radio;
 #include "ESP32_WebUpdate.h"
 #endif
 
-#if defined(GPIO_PIN_BUTTON) && (GPIO_PIN_BUTTON != UNDEF_PIN)
+#if defined(GPIO_PIN_BUTTON) && (GPIO_PIN_BUTTON != UNDEF_PIN) && (USE_5D_BUTTON)
+#include "button_5d.h"
+button_5d button_5d;
+#elif defined(GPIO_PIN_BUTTON) && (GPIO_PIN_BUTTON != UNDEF_PIN)
 #include "button.h"
 button button;
 #endif
@@ -738,7 +741,11 @@ void setup()
   #endif // GPIO_PIN_BUZZER
 
 #if defined(GPIO_PIN_BUTTON) && (GPIO_PIN_BUTTON != UNDEF_PIN)
+#if defined(USE_5D_BUTTON)
+  button_5d.init(GPIO_PIN_BUTTON);
+#else
   button.init(GPIO_PIN_BUTTON, !GPIO_BUTTON_INVERTED); // r9 tx appears to be active high
+#endif
 #endif
 
 #if defined(TARGET_TX_FM30)
@@ -759,9 +766,8 @@ void setup()
   button.buttonLongPress = &POWERMGNT.handleCyclePower;
 #endif
 
-#if defined(TARGET_TX_BETAFPV_2400_MICRO_V1) || defined(TARGET_TX_BETAFPV_900_MICRO_V1)
-button.buttonShortPress = &shortPressCallback;
-button.buttonLongPress = &longPressCallback;
+#if defined(TARGET_TX_BETAFPV_2400_MICRO_V1) || defined(TARGET_TX_BETAFPV_900_MICRO_V1) //MICRO tx use the 5d button instead of general button
+// button_5d.buttonMiddleLongPress = &longPressCallback;
 #endif
 
 #ifdef PLATFORM_ESP32
@@ -893,7 +899,12 @@ void loop()
   #endif // PLATFORM_STM32
 
   #if defined(GPIO_PIN_BUTTON) && (GPIO_PIN_BUTTON != UNDEF_PIN)
-    button.handle();
+  #if defined(USE_5D_BUTTON)
+  button_5d.handle();
+  #else
+  button.handle(); 
+  #endif
+
   #endif
 
   if (Serial.available())
