@@ -36,34 +36,27 @@ extern void menuWifiUpdate(void);
 void shortPressCallback(void);
 void longPressCallback(void);
 
+
+
 #define LOCKTIME 8000
 
 volatile bool MenuUpdateReq = false;
 
-const char *OLED_MENU::getOptionString(int index)
-{
-    switch(index)
-    {
-        case 0: return "Pkt.rate";
-        case 1: return "TLM Ratio";
-        case 2: return "Power";
-        case 3: return "RGB";
-        case 4: return "";
-        case 5: return "";
-        default:return "Error";
-    }
-}
 
-menuShow_t OLED_MENU::currentItem[] ={
+
+
+menuItemShow_t OLED_MENU::menuItem[] ={
     {
-        0,
-        0,
+        0,//Index of the menu's first option (Pkt.rate in here）
+        0,//Default value of the menu's first option
         {
-            {0,  20,  getOptionString},
-            {80, 20,  getRateString}
+            {0,  20,  getOptionString}, //Display string of the option
+            {80, 20,  getRateString}    //Display string of the option's value
         },
-        {79,12,31,9},
-        pktRateLPCB
+        {79,12,31,9},                   //Display format
+        pktRateDecreaseCallBack,        //left press of 5d button's callback function
+        pktRateIncreaseCallBack,        //right press of 5d button's callback function
+        nullCallback                    //middle press of 5d button's callback function
     },
     {
         1,
@@ -73,7 +66,9 @@ menuShow_t OLED_MENU::currentItem[] ={
             {80, 30,  getTLMRatioString}
         },
         {79,21,31,10},
-        tlmLPCB
+        tlmRadioDecreaseCallBack,
+        tlmRadioIncreaseCallBack,
+        nullCallback
     },
     {
         2,
@@ -83,7 +78,9 @@ menuShow_t OLED_MENU::currentItem[] ={
             {80, 40,  getPowerString}
         },
         {79,32,30,10},
-        powerLPCB
+        powerDecreaseCallBack,
+        powerIncreaseCallBack,
+        nullCallback
     },
     {
         3,
@@ -93,7 +90,9 @@ menuShow_t OLED_MENU::currentItem[] ={
             {80, 50,  getRgbString}
         },
         {79,42,30,10},
-        rgbLPCB
+        RGBDecreaseCallBack,
+        RGBIncreaseCallBack,
+        nullCallback
     },
     {
         4,
@@ -103,7 +102,9 @@ menuShow_t OLED_MENU::currentItem[] ={
             {0, 62,  getBindString}
         },
         {0,53,30,11},
-        bindLPCB
+        nullCallback,
+        nullCallback,
+        bindCallBack
     },
     {
         5,
@@ -113,30 +114,20 @@ menuShow_t OLED_MENU::currentItem[] ={
             {80, 62,  getUpdateiString}
         },
         {79,53,30,11},
-        updateLPCB
+        nullCallback,
+        nullCallback,
+        updateCallBack
     },
 };
-
 
 uint32_t OLED_MENU::lastProcessTime=0;
 uint8_t  OLED_MENU::currentIndex = 0;
 uint8_t  OLED_MENU::showBaseIndex = 0;
 uint8_t  OLED_MENU::screenLocked = 0;
-uint8_t  OLED_MENU::wifiupdateSta = 0;
-uint8_t  OLED_MENU::BindingSta = false;
 char*    OLED_MENU::Hashcode;
 bool     OLED_MENU::FirstTimeBootFlag = false;
 
-void shortPressCallback(void)
-{
-    OLED_MENU::shortPressCB();
-}
 
-
-void longPressCallback(void)
-{
-    OLED_MENU::longPressCB();
-}
 
 void OLED_MENU::Init(void)
 {
@@ -152,7 +143,6 @@ void OLED_MENU::displayLockScreen()
     u8g2.drawUTF8(78,50,SCREEN_FR_STRING); 
     u8g2.sendBuffer();
 }
-
 
 
 void OLED_MENU::Bind_prompt()
@@ -193,7 +183,7 @@ void OLED_MENU::WIFIUpdateScreen(void)
     u8g2.drawUTF8(14,40, "http://10.0.0.1/"); 
     u8g2.drawUTF8(20,53, "PW: expresslrs"); 
     u8g2.sendBuffer();
-    OLED_MENU::wifiupdateSta = 1;
+    OLED_MENU::inWifiUpdateMode = true;
 }
 
 void OLED_MENU::ScreenLocked(void)
@@ -225,135 +215,48 @@ void OLED_MENU::menuUpdata(const char * Hashcode)
 
     for(int i=0;i<6;i++)
     {
-        u8g2.drawUTF8(currentItem[i].option[0].line,currentItem[i].option[0].row,currentItem[i].option[0].getStr(currentItem[i].index));
+        u8g2.drawUTF8(menuItem[i].option[0].line,menuItem[i].option[0].row,menuItem[i].option[0].getStr(menuItem[i].index));
         
-        if(currentIndex == currentItem[i].index)
+        if(currentIndex == menuItem[i].index)
         {
-            u8g2.drawBox(currentItem[i].box.x,currentItem[i].box.y,strlen(currentItem[i].option[1].getStr(currentItem[i].value))*6+1,currentItem[i].box.hight);         
+            u8g2.drawBox(menuItem[i].box.x,menuItem[i].box.y,strlen(menuItem[i].option[1].getStr(menuItem[i].value))*6+1,menuItem[i].box.hight);         
         }
 
         u8g2.setDrawColor(2);
-        u8g2.drawUTF8(currentItem[i].option[1].line,currentItem[i].option[1].row,currentItem[i].option[1].getStr(currentItem[i].value));
+        u8g2.drawUTF8(menuItem[i].option[1].line,menuItem[i].option[1].row,menuItem[i].option[1].getStr(menuItem[i].value));
     }
-    if(currentIndex == 4)
-    {
-        BindingSta = true;
-    }
-    else
-    {
-        BindingSta = false;
-    }
-    //delay(100);
     u8g2.sendBuffer();
 }
 
 void OLED_MENU::updateScreen(const char power ,const char rate, const char tlm,char * commitStr)
 {
-     currentItem[0].value = rate;
-     currentItem[1].value = tlm;
-     currentItem[2].value = power;
+     menuItem[0].value = rate;
+     menuItem[1].value = tlm;
+     menuItem[2].value = power;
      Hashcode = commitStr;
-    if(OLED_MENU::screenLocked == 0)
+    if(OLED_MENU::inSetupPage == true)
     {
         OLED_MENU::menuUpdata(Hashcode);
     }    
 }
 
-void OLED_MENU::shortPressCB(void)
-{
-    if(!screenLocked)
-    {
-        lastProcessTime = millis();
-        currentIndex ++;
+//Do nothing
+void OLED_MENU::nullCallback(uint8_t i) {}
 
-        if(currentIndex > 5) //detect last index,then comeback to first
-        {
-            currentIndex = 0;
-            showBaseIndex =0;
-        }
-        OLED_MENU::menuUpdata(Hashcode);
+
+const char *OLED_MENU::getOptionString(int index)
+{
+    switch(index)
+    {
+        case 0: return "Pkt.rate";
+        case 1: return "TLM Ratio";
+        case 2: return "Power";
+        case 3: return "RGB";
+        case 4: return "";
+        case 5: return "";
+        default:return "Error";
     }
 }
-
-void OLED_MENU::longPressCB(void)
-{
-    lastProcessTime = millis();
-    if(screenLocked)  //unlock screen
-    {
-        screenLocked = 0;
-        uartDisconnected();   
-        weakupMenu();   
-        while(!digitalRead(GPIO_PIN_BUTTON));  //Wait for the button to spring up
-    }
-    else
-    {  
-        currentItem[currentIndex].lpcb(currentIndex);
-    }  
-
-    if(OLED_MENU::BindingSta == false)
-    {
-        if(OLED_MENU::wifiupdateSta == 0)
-        {
-            OLED_MENU::menuUpdata(Hashcode);
-        }
-    }
-   
-}
-
-void OLED_MENU::pktRateLPCB(uint8_t i)
-{
-    currentItem[i].value++;
-
-    if(currentItem[i].value>3)
-    {
-        currentItem[i].value = 0;
-    }
-    menuSetRate(currentItem[i].value);
-}
-
-void OLED_MENU::tlmLPCB(uint8_t i)
-{
-    currentItem[i].value++;
-
-    if(currentItem[i].value>7)
-    {
-        currentItem[i].value = 0;
-    }
-    menuSetTLM(currentItem[i].value);
-}
-
-void OLED_MENU::powerLPCB(uint8_t i)
-{
-    currentItem[i].value++;
-
-    if(currentItem[i].value>7)
-    {
-        currentItem[i].value = 0;
-    }
-    menuSetPow(currentItem[i].value);
-}
-
-void OLED_MENU::rgbLPCB(uint8_t i)
-{
-    currentItem[i].value++;
-
-    if(currentItem[i].value>8)
-    {
-        currentItem[i].value = 0;
-    }
-    setRGBColor(currentItem[i].value);
-}
-
-void OLED_MENU::bindLPCB(uint8_t i)
-{   
-    menuBinding();
-}
-
-void OLED_MENU::updateLPCB(uint8_t i)
-{
-    menuWifiUpdate();
-}
-
 
 const char * OLED_MENU::getBindString(int bind)
 {
@@ -466,4 +369,226 @@ void OLED_MENU::setCommitString(const uint8_t * commit, char * commitStr){
     }
 
 }
+
+
+/*----------------5d button operation--------------------*/
+bool OLED_MENU::inSetupPage = false;
+bool OLED_MENU::inBindingMode = false;
+bool OLED_MENU::inWifiUpdateMode = false;
+
+void OLED_MENU::pktRateDecreaseCallBack(uint8_t i)
+{
+#if defined(Regulatory_Domain_ISM_2400)
+    //The following parameters are supported here :
+    // 0:  "500hz" 1:  "250hz"  2:  "150hz"  3:  "50hz"
+    if (menuItem[i].value >= 0 && menuItem[i].value < 3)
+       menuItem[i].value++;
+    else
+        menuItem[i].value = 3;
+#endif 
+#if defined(Regulatory_Domain_AU_915) || defined(Regulatory_Domain_EU_868)  || defined(Regulatory_Domain_IN_866) || defined(Regulatory_Domain_FCC_915) || defined(Regulatory_Domain_AU_433) || defined(Regulatory_Domain_EU_433)
+    //The following parameters are supported here :
+    // 0:  "200hz" 1:  "100hz" 2:  "50hz"   3:  "25hz" 
+      if (menuItem[i].value >= 0 && menuItem[i].value < 3)
+        menuItem[i].value++;
+      else
+        menuItem[i].value = 3;
+#endif
+    menuSetRate(menuItem[i].value);
+}
+
+void OLED_MENU::pktRateIncreaseCallBack(uint8_t i)
+{
+#if defined(Regulatory_Domain_ISM_2400)
+    //The following parameters are supported here :
+    // 0:  "500hz" 1:  "250hz"  2:  "150hz"  3:  "50hz"
+    if (menuItem[i].value > 0 && menuItem[i].value <= 3)
+       menuItem[i].value--;
+    else
+        menuItem[i].value = 0;
+#endif 
+#if defined(Regulatory_Domain_AU_915) || defined(Regulatory_Domain_EU_868)  || defined(Regulatory_Domain_IN_866) || defined(Regulatory_Domain_FCC_915) || defined(Regulatory_Domain_AU_433) || defined(Regulatory_Domain_EU_433)
+    //The following parameters are supported here :
+    // 0:  "200hz" 1:  "100hz" 2:  "50hz"   3:  "25hz" 
+      if (menuItem[i].value > 0 && menuItem[i].value <= 3)
+        menuItem[i].value--;
+      else
+        menuItem[i].value = 0;
+#endif
+    menuSetRate(menuItem[i].value);
+}
+
+void OLED_MENU::tlmRadioDecreaseCallBack(uint8_t i)
+{     
+    //all of the tlmRadio are supported here 
+    //0:  "OFF"  1:  "1:128" 2:  "1:64" 3:  "1:32" 4:  "1:16" 5:  "1:8"  6:  "1:4" 7:  "1:2"
+    if (menuItem[i].value > 0 && menuItem[i].value <= 7)
+        menuItem[i].value--;
+    else
+        menuItem[i].value = 0;
+    menuSetTLM(menuItem[i].value);
+}
+void OLED_MENU::tlmRadioIncreaseCallBack(uint8_t i)
+{
+    //all of the tlmRadio are supported here 
+    //0:  "OFF"  1:  "1:128" 2:  "1:64" 3:  "1:32" 4:  "1:16" 5:  "1:8"  6:  "1:4" 7:  "1:2"
+    if (menuItem[i].value < 7 && menuItem[i].value >= 0)
+        menuItem[i].value++;
+    else
+        menuItem[i].value = 7;
+    menuSetTLM(menuItem[i].value);
+}
+
+void OLED_MENU::powerDecreaseCallBack(uint8_t i)
+{
+#if defined(Regulatory_Domain_ISM_2400)
+     //The following parameters are supported here:
+     //0:  "10mW" 1:  "25mW" 2:  "50mW" 3:  "100mW"  4:  "250mW"  5:  "500mW"
+    if (menuItem[i].value > 0 && menuItem[i].value <= 5)
+       menuItem[i].value--;
+    else
+        menuItem[i].value = 0;
+#endif 
+#if defined(Regulatory_Domain_AU_915) || defined(Regulatory_Domain_EU_868)  || defined(Regulatory_Domain_IN_866) || defined(Regulatory_Domain_FCC_915) || defined(Regulatory_Domain_AU_433) || defined(Regulatory_Domain_EU_433)
+     //The following parameters are supported here:
+     //3:  "100mW"  4:  "250mW"  5:  "500mW"
+      if (menuItem[i].value > 3 && menuItem[i].value <= 5)
+        menuItem[i].value--;
+      else
+        menuItem[i].value = 3;
+#endif
+    menuSetPow(menuItem[i].value);
+}
+
+void OLED_MENU::powerIncreaseCallBack(uint8_t i)
+{
+#if defined(Regulatory_Domain_ISM_2400)
+     //The following parameters are supported here:
+     //0:  "10mW" 1:  "25mW" 2:  "50mW" 3:  "100mW"  4:  "250mW"  5:  "500mW"
+    if (menuItem[i].value >= 0 && menuItem[i].value < 5)
+       menuItem[i].value++;
+    else
+        menuItem[i].value = 5;
+#endif 
+#if defined(Regulatory_Domain_AU_915) || defined(Regulatory_Domain_EU_868)  || defined(Regulatory_Domain_IN_866) || defined(Regulatory_Domain_FCC_915) || defined(Regulatory_Domain_AU_433) || defined(Regulatory_Domain_EU_433)
+     //The following parameters are supported here :
+     //3:  "100mW"  4:  "250mW"  5:  "500mW"
+      if (menuItem[i].value >= 3 && menuItem[i].value < 5)
+        menuItem[i].value++;
+      else
+        menuItem[i].value = 5;
+#endif
+    menuSetPow(menuItem[i].value);
+}
+
+void OLED_MENU::RGBDecreaseCallBack(uint8_t i)
+{    
+    //The following colors are supported here :
+    //0:  "Cyan" 1:  "Blue" 2:  "White"  3:  "Aqua"  4:  "Red" 5:  "Green" 6:  "Pink"  7:  "Yellow" 8:  "Purple" 
+    menuItem[i].value = (menuItem[i].value>0) ? menuItem[i].value-1 : 8;
+    setRGBColor(menuItem[i].value);
+}
+
+void OLED_MENU::RGBIncreaseCallBack(uint8_t i)
+{
+    //The following colors are supported here :
+    //0:  "Cyan" 1:  "Blue" 2:  "White"  3:  "Aqua"  4:  "Red" 5:  "Green" 6:  "Pink"  7:  "Yellow" 8:  "Purple" 
+    menuItem[i].value = (menuItem[i].value < 8) ? menuItem[i].value+1 : 0;
+    setRGBColor(menuItem[i].value);
+}
+
+void OLED_MENU::bindCallBack(uint8_t i)
+{
+    menuBinding();
+}
+
+void OLED_MENU::updateCallBack(uint8_t i)
+{
+    menuWifiUpdate();
+}
+//entering or exiting the setup page
+void OLED_MENU::middleLongPressCallback(void)
+{
+    lastProcessTime = millis();
+    if(false == OLED_MENU::inSetupPage)
+    {
+        uartDisconnected(); 
+        weakupMenu();   
+        OLED_MENU::menuUpdata(Hashcode);
+        OLED_MENU::inSetupPage = true;
+    }
+    else
+    {  
+        displayLockScreen();
+        uartConnected();
+        OLED_MENU::inSetupPage = false;
+    }  
+    
+}
+
+//Confirm button[for entering binding mode or wifiupdate mode]
+void OLED_MENU::middleShortPressCallback(void)
+{
+     if(true == OLED_MENU::inSetupPage)
+    {
+        menuItem[currentIndex].middleShortPressCallBack(currentIndex);
+        if(OLED_MENU::inWifiUpdateMode == false)
+            OLED_MENU::menuUpdata(Hashcode);
+    }
+    
+}
+//Switch options upward 
+void OLED_MENU::upShortPressCallback(void)
+{
+    if(true == OLED_MENU::inSetupPage)
+    {
+        
+        if(currentIndex <= 0) 
+        {
+            currentIndex = 5;
+            showBaseIndex = 5;
+        }else
+        {
+            currentIndex --;
+        }
+        OLED_MENU::menuUpdata(Hashcode);
+    }
+    
+}
+//Switch options downward
+void OLED_MENU::downShortPressCallback(void)
+{
+    if(true == OLED_MENU::inSetupPage)
+    {
+        currentIndex ++;
+
+        if(currentIndex > 5) 
+        {
+            currentIndex = 0;
+            showBaseIndex = 0;
+        }
+        OLED_MENU::menuUpdata(Hashcode);
+    }
+}
+//Decreasing the selected parameter
+void OLED_MENU::leftShortPressCallback(void)
+{
+    if(true == OLED_MENU::inSetupPage)
+    {
+        menuItem[currentIndex].leftShortPressCallBack(currentIndex);
+        OLED_MENU::menuUpdata(Hashcode);
+    }
+    
+}
+//Increasing the selected parameter
+void OLED_MENU::rightShortPressCallback(void)
+{
+    if(true == OLED_MENU::inSetupPage)
+    {
+        menuItem[currentIndex].rightShortPressCallBack(currentIndex);
+        OLED_MENU::menuUpdata(Hashcode);
+    }
+}
+
+/*----------------end--------------------*/
 #endif

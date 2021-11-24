@@ -81,8 +81,8 @@ char commitStr[7] = "commit";
 #if defined(HAS_I2C_OLED_MENU)
 char commitStr[7] = "commit";
 OLED_MENU OLED_MENU;
-extern void shortPressCallback(void);
-extern void longPressCallback(void);
+// extern void shortPressCallback(void);
+// extern void longPressCallback(void);
 #endif
 
 volatile uint8_t NonceTX;
@@ -767,7 +767,12 @@ void setup()
 #endif
 
 #if defined(TARGET_TX_BETAFPV_2400_MICRO_V1) || defined(TARGET_TX_BETAFPV_900_MICRO_V1) //MICRO tx use the 5d button instead of general button
-// button_5d.buttonMiddleLongPress = &longPressCallback;
+ button_5d.buttonMiddleLongPress = &OLED_MENU::middleLongPressCallback;
+ button_5d.buttonMiddleShortPress = &OLED_MENU::middleShortPressCallback;
+ button_5d.buttonUpShortPress = &OLED_MENU::upShortPressCallback;
+ button_5d.buttonDownShortPress = &OLED_MENU::downShortPressCallback;
+ button_5d.buttonLeftShortPress = &OLED_MENU::leftShortPressCallback;
+ button_5d.buttonRightShortPress = &OLED_MENU::rightShortPressCallback;
 #endif
 
 #ifdef PLATFORM_ESP32

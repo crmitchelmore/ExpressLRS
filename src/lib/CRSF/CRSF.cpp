@@ -737,11 +737,11 @@ bool CRSF::UARTwdt()
     {
         if (BadPktsCount >= GoodPktsCount)
         {
-            Serial.print("Too many bad UART RX packets! ");
+            // Serial.print("Too many bad UART RX packets! ");
 
             if (CRSFstate == true)
             {
-                Serial.println("CRSF UART Disconnected");
+                // Serial.println("CRSF UART Disconnected");
 #ifdef FEATURE_OPENTX_SYNC_AUTOTUNE
                 SyncWaitPeriodCounter = now; // set to begin wait for auto sync offset calculation
                 CRSF::OpenTXsyncOffsetSafeMargin = 1000;
@@ -755,9 +755,9 @@ bool CRSF::UARTwdt()
             uint32_t UARTrequestedBaud = (UARTcurrentBaud == CRSF_OPENTX_FAST_BAUDRATE) ?
                 CRSF_OPENTX_SLOW_BAUDRATE : CRSF_OPENTX_FAST_BAUDRATE;
 
-            Serial.print("UART WDT: Switch to: ");
-            Serial.print(UARTrequestedBaud);
-            Serial.println(" baud");
+            // Serial.print("UART WDT: Switch to: ");
+            // Serial.print(UARTrequestedBaud);
+            // Serial.println(" baud");
 
             SerialOutFIFO.flush();
 #ifdef PLATFORM_ESP32
@@ -779,10 +779,10 @@ bool CRSF::UARTwdt()
 
             retval = true;
         }
-        Serial.print("UART STATS Bad:Good = ");
-        Serial.print(BadPktsCount);
-        Serial.print(":");
-        Serial.println(GoodPktsCount);
+        // Serial.print("UART STATS Bad:Good = ");
+        // Serial.print(BadPktsCount);
+        // Serial.print(":");
+        // Serial.println(GoodPktsCount);
 
         UARTwdtLastChecked = now;
         GoodPktsCountResult = GoodPktsCount;

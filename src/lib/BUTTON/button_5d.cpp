@@ -102,23 +102,18 @@ void button_5d::sampleButton(button_5d_t *button)
             {
                 case BUTTON_MODDLE:
                     buttonMiddleShortPress();
-                    Serial.println("-----------BUTTON_MODDLE SHORT PRESS--------run buttonMiddleShortPress()");
                     break;
                 case BUTTON_LEFT:
                     buttonLeftShortPress();
-                    Serial.println("-----------BUTTON_LEFT SHORT PRESS-----------run buttonLeftShortPress()");
                     break;
                 case BUTTON_DOWN:
                     buttonDownShortPress();
-                    Serial.println("-----------BUTTON_DOWN SHORT PRESS-----------run buttonDownShortPress()");
                     break;
                 case BUTTON_UP:
                     buttonUpShortPress();
-                    Serial.println("-----------BUTTON_UP SHORT PRESS-------------run buttonUpShortPress()");
                     break;
                 case BUTTON_RIGHT:
                     buttonRightShortPress();
-                    Serial.println("-----------BUTTON_RIGHT SHORT PRESS-----------run buttonRightShortPress()");
                     break;
                 case BUTTON_NONE:
                     break;
@@ -133,23 +128,18 @@ void button_5d::sampleButton(button_5d_t *button)
             {
                 case BUTTON_MODDLE:
                     buttonMiddleLongPress();
-                    Serial.println("-----------BUTTON_MODDLE LONG PRESS-------run buttonMiddleLongPress()");
                     break;
                 case BUTTON_LEFT:
                     buttonLeftLongPress();
-                    Serial.println("-----------BUTTON_LEFT LONG PRESS----------run buttonLeftLongPress()");
                     break;
                 case BUTTON_DOWN:
                     buttonDownLongPress();
-                    Serial.println("-----------BUTTON_DOWN LONG PRESS-----------run buttonDownLongPress()");
                     break;
                 case BUTTON_UP:
                     buttonUpLongPress();
-                    Serial.println("-----------BUTTON_UP LONG PRESS-------------run buttonUpLongPress()");
                     break;
                 case BUTTON_RIGHT:
                     buttonRightLongPress();
-                    Serial.println("-----------BUTTON_RIGHT LONG PRESS-----------run buttonRightLongPress()");
                     break;
                 case BUTTON_NONE:
                     break;
