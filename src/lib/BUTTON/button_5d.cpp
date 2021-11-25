@@ -99,6 +99,28 @@ void button_5d::sampleButton(button_5d_t *button)
         else if (button->button_press_counter == (KEY_LONG_CNT + KEY_HOLD_CNT))        //The button is always pressed
         {
             button->button_press_counter = KEY_LONG_CNT;
+           //If the button is hold pressed,the following code will executed every KEY_HOLD_CNT later(same as pressing the button short time continuously)
+            switch(current_button)
+            {
+                case BUTTON_MODDLE:
+                    break;
+                case BUTTON_LEFT:
+                    buttonLeftShortPress();
+                    break;
+                case BUTTON_DOWN:
+                    buttonDownShortPress();
+                    break;
+                case BUTTON_UP:
+                    buttonUpShortPress();
+                    break;
+                case BUTTON_RIGHT:
+                    buttonRightShortPress();
+                    break;
+                case BUTTON_NONE:
+                    break;
+                default:
+                    break;
+            }
         }
         else
         {
