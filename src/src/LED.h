@@ -4,9 +4,9 @@ int8_t LEDfadeAmount = 2;
 constexpr uint32_t LEDupdateInterval = 100;
 uint32_t LEDupdateCounterMillis;
 
-static connectionState_e lastState = disconnected;
-static uint32_t lastColor = 0xFFFFFFFF;
-static uint32_t lastPower = 0xFFFFFFFF;
+// static connectionState_e lastState = disconnected;
+// static uint32_t lastColor = 0xFFFFFFFF;
+// static uint32_t lastPower = 0xFFFFFFFF;
 
 #if defined(PLATFORM_ESP32) && defined(GPIO_PIN_LED)
 #include <NeoPixelBus.h>
@@ -56,12 +56,12 @@ static uint32_t colors[8] = {
 
 
 
-static uint32_t rate_colors[RATE_MAX] = {
-    0x00FF00,     // 500/250/200 hz  green
-    0xFFFFFF,     // 250/150/100 hz  yellow
-    0xFF8000,     // 150/50/50 hz    orange
-    0xFF0000      // 50/25/25 hz     red
-};
+// static uint32_t rate_colors[RATE_MAX] = {
+//     0x00FF00,     // 500/250/200 hz  green
+//     0xFFFFFF,     // 250/150/100 hz  yellow
+//     0xFF8000,     // 150/50/50 hz    orange
+//     0xFF0000      // 50/25/25 hz     red
+// };
 
 #if defined(PLATFORM_ESP32) && defined(GPIO_PIN_LED)
 void WS281Binit()

@@ -491,7 +491,7 @@ void HandleUpdateParameter()
       config.SetRate(enumRatetoIndex((expresslrs_RFrates_e)crsf.ParameterUpdateData[1]));
     #if defined(HAS_OLED)
       OLED.updateScreen(OLED.getPowerString((PowerLevels_e)POWERMGNT.currPower()),
-                        OLED.getRateString((expresslrs_RFrates_e)crsf.ParameterUpdateData[1]), 
+                        OLED.getRateString((expresslrs_RFrates_e)crsf.ParameterUpdateData[1]),
                         OLED.getTLMRatioString((expresslrs_tlm_ratio_e)(ExpressLRS_currAirRate_Modparams->TLMinterval)), commitStr);
     #endif
 
@@ -512,7 +512,7 @@ void HandleUpdateParameter()
       config.SetTlm((expresslrs_tlm_ratio_e)crsf.ParameterUpdateData[1]);
     #if defined(HAS_OLED)
       OLED.updateScreen(OLED.getPowerString((PowerLevels_e)POWERMGNT.currPower()),
-                        OLED.getRateString((expresslrs_RFrates_e)ExpressLRS_currAirRate_Modparams->enum_rate), 
+                        OLED.getRateString((expresslrs_RFrates_e)ExpressLRS_currAirRate_Modparams->enum_rate),
                         OLED.getTLMRatioString((expresslrs_tlm_ratio_e)crsf.ParameterUpdateData[1]), commitStr);
     #endif
 
@@ -532,7 +532,7 @@ void HandleUpdateParameter()
       config.SetPower((PowerLevels_e)crsf.ParameterUpdateData[1]);
       #if defined(HAS_OLED)
         OLED.updateScreen(OLED.getPowerString((PowerLevels_e)crsf.ParameterUpdateData[1]),
-                          OLED.getRateString((expresslrs_RFrates_e)ExpressLRS_currAirRate_Modparams->enum_rate), 
+                          OLED.getRateString((expresslrs_RFrates_e)ExpressLRS_currAirRate_Modparams->enum_rate),
                           OLED.getTLMRatioString((expresslrs_tlm_ratio_e)ExpressLRS_currAirRate_Modparams->TLMinterval), commitStr);
       #endif
 
@@ -656,18 +656,18 @@ void weakupMenu(void) {OLED_MENU.updateScreen((PowerLevels_e)POWERMGNT.currPower
                        commitStr);}
 
 
-void uartConnected(void) {UARTconnected();}
+void uartConnected(void) {}
 void OLED_MENU_start(void) {crsf.Begin();};    //After the startup animation is complete, open the CRSF serial port to avoid startup failure
-void uartDisconnected(void) {UARTdisconnected();}
+void uartDisconnected(void) {}
 
-void menuBinding(void) 
+void menuBinding(void)
 {
     OLED_MENU.Bind_prompt();
     EnterBindingMode();
     uartDisconnected();
 }
-void menuWifiUpdate(void) 
-{ 
+void menuWifiUpdate(void)
+{
     uartConnected();
     usleep(500);
     webUpdateMode = true;
@@ -690,7 +690,7 @@ void setup()
   OLED.displayLogo();
   OLED.setCommitString(thisCommit, commitStr);
 #endif
- 
+
 #if defined(HAS_I2C_OLED_MENU)
   OLED_MENU.Init();
   OLED_MENU.Boot_animation();
@@ -761,7 +761,7 @@ void setup()
   digitalWrite(GPIO_PIN_UART1RX_INVERT, HIGH);
 #endif
 
-#if defined(TARGET_TX_BETAFPV_2400_V1) || defined(TARGET_TX_BETAFPV_900_V1) 
+#if defined(TARGET_TX_BETAFPV_2400_V1) || defined(TARGET_TX_BETAFPV_900_V1)
   button.buttonTriplePress = &EnterBindingMode;
   button.buttonLongPress = &POWERMGNT.handleCyclePower;
 #endif
@@ -841,11 +841,11 @@ void setup()
   SetRFLinkRate(config.GetRate());
   ExpressLRS_currAirRate_Modparams->TLMinterval = (expresslrs_tlm_ratio_e)config.GetTlm();
   POWERMGNT.setPower((PowerLevels_e)config.GetPower());
-  
+
 
    hwTimer.init();
   //hwTimer.resume();  //uncomment to automatically start the RX timer and leave it running
- 
+
 #if defined(TARGET_TX_BETAFPV_2400_MICRO_V1) || defined(TARGET_TX_BETAFPV_900_MICRO_V1)
 
 #else
@@ -907,7 +907,7 @@ void loop()
   #if defined(USE_5D_BUTTON)
   button_5d.handle();
   #else
-  button.handle(); 
+  button.handle();
   #endif
 
   #endif
@@ -1080,7 +1080,7 @@ void EnterBindingMode()
   Radio.SetFrequencyReg(GetInitialFreq());
   // Start transmitting again
   hwTimer.resume();
-  #ifdef TARGET_TX_BETAFPV_900_MICRO_V1
+  #if defined(TARGET_TX_BETAFPV_900_MICRO_V1) || defined(TARGET_TX_BETAFPV_2400_MICRO_V1)
     startupLEDs();
   #endif
   Serial.print("Entered binding mode at freq = ");

@@ -1,16 +1,16 @@
-/* 
+/*
  * This file is part of the ExpressLRS distribution (https://github.com/ExpressLRS/ExpressLRS).
- * 
- * This program is free software: you can redistribute it and/or modify  
- * it under the terms of the GNU General Public License as published by  
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
  *
- * This program is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License 
+ * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -38,7 +38,7 @@ void longPressCallback(void);
 
 
 
-#define LOCKTIME 8000
+#define LOCKTIME 5000
 
 volatile bool MenuUpdateReq = false;
 
@@ -135,12 +135,12 @@ void OLED_MENU::Init(void)
 }
 
 void OLED_MENU::displayLockScreen()
-{ 
+{
     u8g2.clearBuffer();
-    u8g2.drawXBM(0, 0, 64, 64, elrs64);  
+    u8g2.drawXBM(0, 0, 64, 64, elrs64);
     u8g2.setFont(u8g2_font_HelvetiPixelOutline_tr);
-    u8g2.drawUTF8(76,30, "ELRS"); 
-    u8g2.drawUTF8(78,50,SCREEN_FR_STRING); 
+    u8g2.drawUTF8(76,30, "ELRS");
+    u8g2.drawUTF8(78,50,SCREEN_FR_STRING);
     u8g2.sendBuffer();
 }
 
@@ -152,38 +152,42 @@ void OLED_MENU::Bind_prompt()
     u8g2.drawGlyph(58, 30, 0x23f3);	/* dec 9731/hex 2603 Snowman */
     u8g2.setFont(u8g2_font_6x12_tf);
     u8g2.drawUTF8(38,50, "Binding...");
-    u8g2.sendBuffer(); 
+    u8g2.sendBuffer();
+    //delay(1000);
+    lastProcessTime = millis();
 }
 
 void OLED_MENU::Boot_animation(void)
 {
     u8g2.clearBuffer();
-    u8g2.drawXBM(0, 32, 32, 32, elrs32); 
-    u8g2.sendBuffer(); 
+    u8g2.drawXBM(0, 32, 32, 32, elrs32);
+    u8g2.sendBuffer();
     delay(300);
     u8g2.clearBuffer();
-    u8g2.drawXBM(20, 20, 40, 40, elrs40); 
-    u8g2.sendBuffer(); 
+    u8g2.drawXBM(20, 20, 40, 40, elrs40);
+    u8g2.sendBuffer();
     delay(300);
     u8g2.clearBuffer();
-    u8g2.drawXBM(30, 10, 56, 56, elrs56); 
-    u8g2.sendBuffer(); 
+    u8g2.drawXBM(30, 10, 56, 56, elrs56);
+    u8g2.sendBuffer();
     delay(300);
     u8g2.clearBuffer();
-    u8g2.drawXBM(35, 0, 64, 64, elrs64); 
-    u8g2.sendBuffer(); 
+    u8g2.drawXBM(35, 0, 64, 64, elrs64);
+    u8g2.sendBuffer();
+    lastProcessTime = millis();
 }
 
 void OLED_MENU::WIFIUpdateScreen(void)
 {
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_HelvetiPixelOutline_tr);
-    u8g2.drawUTF8(15,20, "WIFI Update"); 
+    u8g2.drawUTF8(15,20, "WIFI Update");
     u8g2.setFont(u8g2_font_6x12_tf);
-    u8g2.drawUTF8(14,40, "http://10.0.0.1/"); 
-    u8g2.drawUTF8(20,53, "PW: expresslrs"); 
+    u8g2.drawUTF8(14,40, "http://10.0.0.1/");
+    u8g2.drawUTF8(20,53, "PW: expresslrs");
     u8g2.sendBuffer();
     OLED_MENU::inWifiUpdateMode = true;
+    lastProcessTime = millis();
 }
 
 void OLED_MENU::ScreenLocked(void)
@@ -199,6 +203,7 @@ void OLED_MENU::ScreenLocked(void)
         displayLockScreen();
         OLED_MENU::screenLocked = 1;
         OLED_MENU::lastProcessTime = now;
+        OLED_MENU::inSetupPage = false;
         uartConnected();
     }
 }
@@ -216,16 +221,17 @@ void OLED_MENU::menuUpdata(const char * Hashcode)
     for(int i=0;i<6;i++)
     {
         u8g2.drawUTF8(menuItem[i].option[0].line,menuItem[i].option[0].row,menuItem[i].option[0].getStr(menuItem[i].index));
-        
+
         if(currentIndex == menuItem[i].index)
         {
-            u8g2.drawBox(menuItem[i].box.x,menuItem[i].box.y,strlen(menuItem[i].option[1].getStr(menuItem[i].value))*6+1,menuItem[i].box.hight);         
+            u8g2.drawBox(menuItem[i].box.x,menuItem[i].box.y,strlen(menuItem[i].option[1].getStr(menuItem[i].value))*6+1,menuItem[i].box.hight);
         }
 
         u8g2.setDrawColor(2);
         u8g2.drawUTF8(menuItem[i].option[1].line,menuItem[i].option[1].row,menuItem[i].option[1].getStr(menuItem[i].value));
     }
     u8g2.sendBuffer();
+    lastProcessTime = millis();
 }
 
 void OLED_MENU::updateScreen(const char power ,const char rate, const char tlm,char * commitStr)
@@ -237,7 +243,7 @@ void OLED_MENU::updateScreen(const char power ,const char rate, const char tlm,c
     if(OLED_MENU::inSetupPage == true)
     {
         OLED_MENU::menuUpdata(Hashcode);
-    }    
+    }
 }
 
 //Do nothing
@@ -290,7 +296,7 @@ const char * OLED_MENU::getRgbString(int rgb)
 /**
  * Returns power level string (Char array)
  *
- * @param values power = int/enum for current power level.  
+ * @param values power = int/enum for current power level.
  * @return const char array for power level Ex: "500 mW\0"
  */
 const char *OLED_MENU::getPowerString(int power){
@@ -311,7 +317,7 @@ const char *OLED_MENU::getPowerString(int power){
 /**
  * Returns packet rate string (Char array)
  *
- * @param values rate = int/enum for current packet rate.  
+ * @param values rate = int/enum for current packet rate.
  * @return const char array for packet rate Ex: "500 hz\0"
  */
 const char *OLED_MENU::getRateString(int rate){
@@ -322,7 +328,7 @@ const char *OLED_MENU::getRateString(int rate){
     case 1: return "250hz";
     case 2: return "150hz";
     case 3: return "50hz";
-#endif 
+#endif
 
 #if defined(Regulatory_Domain_AU_915) || defined(Regulatory_Domain_EU_868)  || defined(Regulatory_Domain_IN_866) || defined(Regulatory_Domain_FCC_915) || defined(Regulatory_Domain_AU_433) || defined(Regulatory_Domain_EU_433)
       case 0: return "200hz";
@@ -337,7 +343,7 @@ const char *OLED_MENU::getRateString(int rate){
 /**
  * Returns telemetry ratio string (Char array)
  *
- * @param values ratio = int/enum for current power level.  
+ * @param values ratio = int/enum for current power level.
  * @return const char array for telemetry ratio Ex: "1:128\0"
  */
 const char *OLED_MENU::getTLMRatioString(int ratio){
@@ -385,10 +391,10 @@ void OLED_MENU::pktRateDecreaseCallBack(uint8_t i)
        menuItem[i].value++;
     else
         menuItem[i].value = 3;
-#endif 
+#endif
 #if defined(Regulatory_Domain_AU_915) || defined(Regulatory_Domain_EU_868)  || defined(Regulatory_Domain_IN_866) || defined(Regulatory_Domain_FCC_915) || defined(Regulatory_Domain_AU_433) || defined(Regulatory_Domain_EU_433)
     //The following parameters are supported here :
-    // 0:  "200hz" 1:  "100hz" 2:  "50hz"   3:  "25hz" 
+    // 0:  "200hz" 1:  "100hz" 2:  "50hz"   3:  "25hz"
       if (menuItem[i].value >= 0 && menuItem[i].value < 3)
         menuItem[i].value++;
       else
@@ -406,10 +412,10 @@ void OLED_MENU::pktRateIncreaseCallBack(uint8_t i)
        menuItem[i].value--;
     else
         menuItem[i].value = 0;
-#endif 
+#endif
 #if defined(Regulatory_Domain_AU_915) || defined(Regulatory_Domain_EU_868)  || defined(Regulatory_Domain_IN_866) || defined(Regulatory_Domain_FCC_915) || defined(Regulatory_Domain_AU_433) || defined(Regulatory_Domain_EU_433)
     //The following parameters are supported here :
-    // 0:  "200hz" 1:  "100hz" 2:  "50hz"   3:  "25hz" 
+    // 0:  "200hz" 1:  "100hz" 2:  "50hz"   3:  "25hz"
       if (menuItem[i].value > 0 && menuItem[i].value <= 3)
         menuItem[i].value--;
       else
@@ -419,8 +425,8 @@ void OLED_MENU::pktRateIncreaseCallBack(uint8_t i)
 }
 
 void OLED_MENU::tlmRadioDecreaseCallBack(uint8_t i)
-{     
-    //all of the tlmRadio are supported here 
+{
+    //all of the tlmRadio are supported here
     //0:  "OFF"  1:  "1:128" 2:  "1:64" 3:  "1:32" 4:  "1:16" 5:  "1:8"  6:  "1:4" 7:  "1:2"
     if (menuItem[i].value > 0 && menuItem[i].value <= 7)
         menuItem[i].value--;
@@ -430,7 +436,7 @@ void OLED_MENU::tlmRadioDecreaseCallBack(uint8_t i)
 }
 void OLED_MENU::tlmRadioIncreaseCallBack(uint8_t i)
 {
-    //all of the tlmRadio are supported here 
+    //all of the tlmRadio are supported here
     //0:  "OFF"  1:  "1:128" 2:  "1:64" 3:  "1:32" 4:  "1:16" 5:  "1:8"  6:  "1:4" 7:  "1:2"
     if (menuItem[i].value < 7 && menuItem[i].value >= 0)
         menuItem[i].value++;
@@ -448,7 +454,7 @@ void OLED_MENU::powerDecreaseCallBack(uint8_t i)
        menuItem[i].value--;
     else
         menuItem[i].value = 0;
-#endif 
+#endif
 #if defined(Regulatory_Domain_AU_915) || defined(Regulatory_Domain_EU_868)  || defined(Regulatory_Domain_IN_866) || defined(Regulatory_Domain_FCC_915) || defined(Regulatory_Domain_AU_433) || defined(Regulatory_Domain_EU_433)
      //The following parameters are supported here:
      //3:  "100mW"  4:  "250mW"  5:  "500mW"
@@ -469,7 +475,7 @@ void OLED_MENU::powerIncreaseCallBack(uint8_t i)
        menuItem[i].value++;
     else
         menuItem[i].value = 5;
-#endif 
+#endif
 #if defined(Regulatory_Domain_AU_915) || defined(Regulatory_Domain_EU_868)  || defined(Regulatory_Domain_IN_866) || defined(Regulatory_Domain_FCC_915) || defined(Regulatory_Domain_AU_433) || defined(Regulatory_Domain_EU_433)
      //The following parameters are supported here :
      //3:  "100mW"  4:  "250mW"  5:  "500mW"
@@ -482,9 +488,9 @@ void OLED_MENU::powerIncreaseCallBack(uint8_t i)
 }
 
 void OLED_MENU::RGBDecreaseCallBack(uint8_t i)
-{    
+{
     //The following colors are supported here :
-    //0:  "Cyan" 1:  "Blue" 2:  "White"  3:  "Aqua"  4:  "Red" 5:  "Green" 6:  "Pink"  7:  "Yellow" 8:  "Purple" 
+    //0:  "Cyan" 1:  "Blue" 2:  "White"  3:  "Aqua"  4:  "Red" 5:  "Green" 6:  "Pink"  7:  "Yellow" 8:  "Purple"
     menuItem[i].value = (menuItem[i].value>0) ? menuItem[i].value-1 : 8;
     setRGBColor(menuItem[i].value);
 }
@@ -492,7 +498,7 @@ void OLED_MENU::RGBDecreaseCallBack(uint8_t i)
 void OLED_MENU::RGBIncreaseCallBack(uint8_t i)
 {
     //The following colors are supported here :
-    //0:  "Cyan" 1:  "Blue" 2:  "White"  3:  "Aqua"  4:  "Red" 5:  "Green" 6:  "Pink"  7:  "Yellow" 8:  "Purple" 
+    //0:  "Cyan" 1:  "Blue" 2:  "White"  3:  "Aqua"  4:  "Red" 5:  "Green" 6:  "Pink"  7:  "Yellow" 8:  "Purple"
     menuItem[i].value = (menuItem[i].value < 8) ? menuItem[i].value+1 : 0;
     setRGBColor(menuItem[i].value);
 }
@@ -509,21 +515,21 @@ void OLED_MENU::updateCallBack(uint8_t i)
 //entering or exiting the setup page
 void OLED_MENU::middleLongPressCallback(void)
 {
-    lastProcessTime = millis();
     if(false == OLED_MENU::inSetupPage)
     {
-        uartDisconnected(); 
-        weakupMenu();   
+        uartDisconnected();
+        weakupMenu();
         OLED_MENU::menuUpdata(Hashcode);
         OLED_MENU::inSetupPage = true;
+        OLED_MENU::screenLocked = 0;
     }
     else
-    {  
+    {
         displayLockScreen();
         uartConnected();
         OLED_MENU::inSetupPage = false;
-    }  
-    
+    }
+
 }
 
 //Confirm button[for entering binding mode or wifiupdate mode]
@@ -535,15 +541,15 @@ void OLED_MENU::middleShortPressCallback(void)
         if(OLED_MENU::inWifiUpdateMode == false)
             OLED_MENU::menuUpdata(Hashcode);
     }
-    
+
 }
-//Switch options upward 
+//Switch options upward
 void OLED_MENU::upShortPressCallback(void)
 {
     if(true == OLED_MENU::inSetupPage)
     {
-        
-        if(currentIndex <= 0) 
+
+        if(currentIndex <= 0)
         {
             currentIndex = 5;
             showBaseIndex = 5;
@@ -553,7 +559,7 @@ void OLED_MENU::upShortPressCallback(void)
         }
         OLED_MENU::menuUpdata(Hashcode);
     }
-    
+
 }
 //Switch options downward
 void OLED_MENU::downShortPressCallback(void)
@@ -562,7 +568,7 @@ void OLED_MENU::downShortPressCallback(void)
     {
         currentIndex ++;
 
-        if(currentIndex > 5) 
+        if(currentIndex > 5)
         {
             currentIndex = 0;
             showBaseIndex = 0;
@@ -578,7 +584,7 @@ void OLED_MENU::leftShortPressCallback(void)
         menuItem[currentIndex].leftShortPressCallBack(currentIndex);
         OLED_MENU::menuUpdata(Hashcode);
     }
-    
+
 }
 //Increasing the selected parameter
 void OLED_MENU::rightShortPressCallback(void)
