@@ -846,11 +846,7 @@ void setup()
    hwTimer.init();
   //hwTimer.resume();  //uncomment to automatically start the RX timer and leave it running
 
-#if defined(TARGET_TX_BETAFPV_2400_MICRO_V1) || defined(TARGET_TX_BETAFPV_900_MICRO_V1)
-
-#else
   crsf.Begin();
-#endif
   #if defined(HAS_OLED)
     OLED.updateScreen(OLED.getPowerString((PowerLevels_e)POWERMGNT.currPower()),
                   OLED.getRateString((expresslrs_RFrates_e)ExpressLRS_currAirRate_Modparams->enum_rate),

@@ -77,7 +77,24 @@ void button_5d::sampleButton(button_5d_t *button)
         if (button->button_press_counter == KEY_LONG_CNT)          //The button is pressed for a long time
         {
 
-            
+            switch(current_button)
+            {
+                case BUTTON_MODDLE:
+                    buttonMiddleLongPress();
+                    break;
+                case BUTTON_LEFT:
+                    break;
+                case BUTTON_DOWN:
+                    break;
+                case BUTTON_UP:
+                    break;
+                case BUTTON_RIGHT:
+                    break;
+                case BUTTON_NONE:
+                    break;
+                default:
+                    break;
+            }
         }
         else if (button->button_press_counter == (KEY_LONG_CNT + KEY_HOLD_CNT))        //The button is always pressed
         {
@@ -127,7 +144,6 @@ void button_5d::sampleButton(button_5d_t *button)
                 switch(button->last_button)
             {
                 case BUTTON_MODDLE:
-                    buttonMiddleLongPress();
                     break;
                 case BUTTON_LEFT:
                     buttonLeftLongPress();
