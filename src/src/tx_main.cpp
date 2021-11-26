@@ -184,7 +184,8 @@ void ICACHE_RAM_ATTR ProcessTLMpacket()
             crsf.LinkStatistics.active_antenna = Radio.RXdataBuffer[2] >> 7;
             // RSSI received is signed, inverted polarity (positive value = -dBm)
             // OpenTX's value is signed and will display +dBm and -dBm properly
-            crsf.LinkStatistics.uplink_RSSI_1 = -(Radio.RXdataBuffer[2] & 0x7f);
+            // crsf.LinkStatistics.uplink_RSSI_1 = -(Radio.RXdataBuffer[2] & 0x7f);
+            crsf.LinkStatistics.uplink_RSSI_1 = Radio.RXdataBuffer[2];
             crsf.LinkStatistics.uplink_RSSI_2 = -(Radio.RXdataBuffer[3]);
             crsf.LinkStatistics.uplink_SNR = Radio.RXdataBuffer[4];
             crsf.LinkStatistics.uplink_Link_quality = Radio.RXdataBuffer[5];
