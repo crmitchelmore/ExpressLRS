@@ -63,6 +63,7 @@ const uint8_t thisCommit[6] = {LATEST_COMMIT};
 #define TLM_REPORT_INTERVAL_MS 320LU // Default to 320ms
 #endif
 
+
 #define LUA_VERSION 3
 
 /// define some libs to use ///
@@ -287,7 +288,7 @@ void ICACHE_RAM_ATTR HandleTLM()
   }
 }
 
-void ICACHE_RAM_ATTR SendRCdataToRF()
+void ICACHE_RAM_ATTR  SendRCdataToRF()
 {
   uint8_t *data;
   uint8_t maxLength;
@@ -377,7 +378,7 @@ void ICACHE_RAM_ATTR SendRCdataToRF()
 /*
  * Called as the timer ISR when transmitting
  */
-void ICACHE_RAM_ATTR timerCallbackNormal()
+void ICACHE_RAM_ATTR  timerCallbackNormal()
 {
   // Do not send a stale channels packet to the RX if one has not been received from the handset
   // *Do* send data if a packet has never been received from handset and the timer is running
@@ -647,9 +648,10 @@ void ICACHE_RAM_ATTR TXdoneISR()
 }
 
 #if defined(TARGET_TX_BETAFPV_2400_MICRO_V1) || defined(TARGET_TX_BETAFPV_900_MICRO_V1)
-void menuSetRate(uint32_t rate) {config.SetRate(rate);}
-void menuSetTLM(uint32_t TLM) {config.SetTlm(TLM);}
-void menuSetPow(uint32_t pow) {config.SetPower(pow);}
+void menuSetRate(uint32_t rate) {config.SetRateNV(rate);}
+void menuSetTLM(uint32_t TLM) {config.SetTlmNV(TLM);}
+void menuSetPow(uint32_t pow) {config.SetPowerNV(pow);}
+void menuConfigSave(void){config.SetVaild();}
 void weakupMenu(void) {OLED_MENU.updateScreen((PowerLevels_e)POWERMGNT.currPower(),
                        config.GetRate(),
                        (expresslrs_tlm_ratio_e)(ExpressLRS_currAirRate_Modparams->TLMinterval),
@@ -846,7 +848,11 @@ void setup()
    hwTimer.init();
   //hwTimer.resume();  //uncomment to automatically start the RX timer and leave it running
 
-  crsf.Begin();
+  #if defined(TARGET_TX_BETAFPV_2400_MICRO_V1) || defined(TARGET_TX_BETAFPV_900_MICRO_V1)
+
+  #else
+    crsf.Begin();
+  #endif
   #if defined(HAS_OLED)
     OLED.updateScreen(OLED.getPowerString((PowerLevels_e)POWERMGNT.currPower()),
                   OLED.getRateString((expresslrs_RFrates_e)ExpressLRS_currAirRate_Modparams->enum_rate),

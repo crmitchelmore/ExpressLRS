@@ -35,7 +35,7 @@ extern void uartDisconnected(void);
 extern void menuWifiUpdate(void);
 void shortPressCallback(void);
 void longPressCallback(void);
-
+extern void menuConfigSave(void);
 
 
 #define LOCKTIME 5000
@@ -201,6 +201,7 @@ void OLED_MENU::ScreenLocked(void)
             FirstTimeBootFlag = true;
         }
         displayLockScreen();
+        menuConfigSave();
         OLED_MENU::screenLocked = 1;
         OLED_MENU::lastProcessTime = now;
         OLED_MENU::inSetupPage = false;

@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include "targets.h"
 #include "elrs_eeprom.h"
@@ -33,6 +33,10 @@ public:
     void SetRate(uint32_t rate);
     void SetTlm(uint32_t tlm);
     void SetPower(uint32_t power);
+    void SetRateNV(uint32_t rate);
+    void SetTlmNV(uint32_t tlm);
+    void SetPowerNV(uint32_t power);
+    void SetVaild(void);
     void SetDefaults();
     void SetStorageProvider(ELRS_EEPROM *eeprom);
 

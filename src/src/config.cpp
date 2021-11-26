@@ -26,7 +26,7 @@ TxConfig::Load()
 
 void
 TxConfig::Commit()
-{    
+{
     if (!m_modified)
     {
         // No changes
@@ -71,6 +71,40 @@ TxConfig::SetPower(uint32_t power)
     }
 }
 
+//NO vaild when just change,
+void
+TxConfig::SetRateNV(uint32_t rate)
+{
+    if (m_config.rate != rate)
+    {
+        m_config.rate = rate;
+    }
+}
+
+void
+TxConfig::SetTlmNV(uint32_t tlm)
+{
+    if (m_config.tlm != tlm)
+    {
+        m_config.tlm = tlm;
+    }
+}
+
+void
+TxConfig::SetPowerNV(uint32_t power)
+{
+    if (m_config.power != power)
+    {
+        m_config.power = power;
+    }
+}
+
+void
+TxConfig::SetVaild(void)
+{
+    m_modified = true;
+}
+
 void
 TxConfig::SetDefaults()
 {
@@ -112,7 +146,7 @@ RxConfig::Load()
 
 void
 RxConfig::Commit()
-{    
+{
     if (!m_modified)
     {
         // No changes
