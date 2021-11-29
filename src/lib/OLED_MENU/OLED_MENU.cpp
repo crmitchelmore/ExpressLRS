@@ -527,6 +527,7 @@ void OLED_MENU::middleLongPressCallback(void)
     else
     {
         displayLockScreen();
+        menuConfigSave();
         uartConnected();
         OLED_MENU::inSetupPage = false;
     }
