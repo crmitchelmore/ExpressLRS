@@ -5,8 +5,13 @@
 #if defined(GPIO_PIN_BUTTON) && (GPIO_PIN_BUTTON != UNDEF_PIN)
 #include "logging.h"
 #include "button.h"
+#include "button_5d.h"
+#if defined(TARGET_TX_BETAFPV_2400_MICRO_V1) || defined(TARGET_TX_BETAFPV_900_MICRO_V1)
+    static Button_5d<GPIO_PIN_BUTTON, GPIO_BUTTON_INVERTED> button_5d;
+#else
+    static Button<GPIO_PIN_BUTTON, GPIO_BUTTON_INVERTED> button;
+#endif
 
-static Button<GPIO_PIN_BUTTON, GPIO_BUTTON_INVERTED> button;
 
 #if defined(TARGET_TX_BETAFPV_2400_V1) || defined(TARGET_TX_BETAFPV_900_V1)
 #include "POWERMGNT.h"
@@ -39,6 +44,11 @@ static void cyclePower()
 };
 #endif
 
+#if defined(TARGET_TX_BETAFPV_2400_MICRO_V1) || defined(TARGET_TX_BETAFPV_900_MICRO_V1)
+
+#endif
+
+
 #if defined(TARGET_RX) && (defined(PLATFORM_ESP32) || defined(PLATFORM_ESP8266))
 static void rxWebUpdateReboot()
 {
@@ -59,6 +69,19 @@ static void initialize()
         button.OnShortPress = enterBindMode3Click;
         button.OnLongPress = cyclePower;
     #endif
+    #if defined(TARGET_TX_BETAFPV_2400_MICRO_V1) || defined(TARGET_TX_BETAFPV_900_MICRO_V1)
+        button_5d.OnButtonUpShortPress = nullptr;
+        button_5d.OnButtonDownShortPress = nullptr;
+        button_5d.OnButtonLeftShortPress = nullptr;
+        button_5d.OnButtonRightShortPress = nullptr;
+        button_5d.OnButtonMiddleShortPress = nullptr;
+
+        button_5d.OnButtonUpLongPress = nullptr;
+        button_5d.OnButonDownLongPress = nullptr;
+        button_5d.OnButtonLeftLongPress = nullptr;
+        button_5d.OnButtonRightLongPress = nullptr;
+        button_5d.OnButtonMiddleLongPress = nullptr;
+    #endif
     #if defined(TARGET_RX) && (defined(PLATFORM_ESP32) || defined(PLATFORM_ESP8266))
         button.OnLongPress = rxWebUpdateReboot;
     #endif
@@ -71,7 +94,12 @@ static int start()
 
 static int timeout()
 {
+#if defined(TARGET_TX_BETAFPV_2400_MICRO_V1) || defined(TARGET_TX_BETAFPV_900_MICRO_V1)
+    return button_5d.update();
+#else
     return button.update();
+#endif
+    
 }
 
 device_t Button_device = {
