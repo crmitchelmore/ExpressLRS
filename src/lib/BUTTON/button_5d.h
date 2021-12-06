@@ -48,7 +48,7 @@ private:
     /* data */
     static constexpr uint32_t MS_DEBOUNCE = 25;       // how long the switch must change state to be considered
     static constexpr uint32_t MS_LONG = 500;
-    static constexpr uint32_t MS_HOLD = 500;
+    static constexpr uint32_t MS_HOLD = 300;
     button_5d_t button;
 public:
     // Callbacks
@@ -81,8 +81,11 @@ public:
     {
         uint8_t currentButton;
         currentButton = BUTTON_NONE;
-        button->adcValue = analogRead(PIN);
-        currentButton = buttonFilter(button,getButtonOrientation(button->adcValue));
+        if(connectionState != wifiUpdate)
+        {
+            button->adcValue = analogRead(PIN);
+            currentButton = buttonFilter(button,getButtonOrientation(button->adcValue));
+        }
         if (currentButton == button->lastButton)     //The state of the key has not changed（keep pressd or released）
         {
             if (currentButton == BUTTON_NONE)         //If current button is in release,just return and do nothing

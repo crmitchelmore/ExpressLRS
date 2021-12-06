@@ -45,6 +45,8 @@ static void cyclePower()
 #endif
 
 #if defined(TARGET_TX_BETAFPV_2400_MICRO_V1) || defined(TARGET_TX_BETAFPV_900_MICRO_V1)
+#include "POWERMGNT.h"
+#include "OLED_MENU.h"
 
 #endif
 
@@ -70,17 +72,18 @@ static void initialize()
         button.OnLongPress = cyclePower;
     #endif
     #if defined(TARGET_TX_BETAFPV_2400_MICRO_V1) || defined(TARGET_TX_BETAFPV_900_MICRO_V1)
-        button_5d.OnButtonUpShortPress = nullptr;
-        button_5d.OnButtonDownShortPress = nullptr;
-        button_5d.OnButtonLeftShortPress = nullptr;
-        button_5d.OnButtonRightShortPress = nullptr;
-        button_5d.OnButtonMiddleShortPress = nullptr;
+        button_5d.OnButtonUpShortPress = &OLED_MENU::upShortPressCallback;
+        button_5d.OnButtonDownShortPress = &OLED_MENU::downShortPressCallback;
+        button_5d.OnButtonLeftShortPress = &OLED_MENU::leftShortPressCallback;
+        button_5d.OnButtonRightShortPress = &OLED_MENU::rightShortPressCallback;
+        button_5d.OnButtonMiddleShortPress = &OLED_MENU::middleShortPressCallback;
 
         button_5d.OnButtonUpLongPress = nullptr;
         button_5d.OnButonDownLongPress = nullptr;
         button_5d.OnButtonLeftLongPress = nullptr;
         button_5d.OnButtonRightLongPress = nullptr;
-        button_5d.OnButtonMiddleLongPress = nullptr;
+        button_5d.OnButtonMiddleLongPress = OLED_MENU::middleLongPressCallback;
+
     #endif
     #if defined(TARGET_RX) && (defined(PLATFORM_ESP32) || defined(PLATFORM_ESP8266))
         button.OnLongPress = rxWebUpdateReboot;
