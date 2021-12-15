@@ -28,8 +28,8 @@
 #define GPIO_PIN_BUTTON         25
 
 // Output Power
-#define MinPower PWR_10mW
+#define MinPower PWR_25mW
 #define MaxPower PWR_1000mW
-#define POWER_OUTPUT_VALUES {-20,-18,-15,-13,-9,-4,3}
+#define POWER_OUTPUT_VALUES {-18,-15,-12,-7,-4,2}
 
 #define Regulatory_Domain_ISM_2400 1
