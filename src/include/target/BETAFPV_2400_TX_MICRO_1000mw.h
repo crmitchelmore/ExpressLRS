@@ -3,7 +3,7 @@
 // Any device features
 #define USE_OLED_I2C
 #define OLED_REVERSED
-
+#define USE_TX_BACKPACK
 // There is some special handling for this target
 #define TARGET_TX_BETAFPV_2400_MICRO_V1
 
