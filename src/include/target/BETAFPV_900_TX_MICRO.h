@@ -8,7 +8,7 @@
 // Any device features
 #define USE_OLED_I2C
 #define OLED_REVERSED
-
+#define USE_TX_BACKPACK
 // GPIO pin definitions
 #define GPIO_PIN_NSS            5
 #define GPIO_PIN_DIO0           4
